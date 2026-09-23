@@ -1,0 +1,5 @@
+storage_type,file_size_bytes,write_seconds,full_read_seconds,filtered_read_seconds,row_count,notes
+CSV,8164486,1.0976,0.1157,0.1273,33363,Standard to_csv
+JSON Lines,15699632,0.6762,0.2255,0.2179,33363,Records lines format
+Parquet,3530817,0.1127,0.0357,0.0297,33363,Snappy compression
+PostgreSQL,9175040,,0.2063,0.0667,33363,Pre-loaded table size

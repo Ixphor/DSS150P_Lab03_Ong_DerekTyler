@@ -3,7 +3,7 @@ import uuid
 from pathlib import Path
 from src.extract.extractor import extract_sources
 from src.transform.transformer import transform_data
-from src.load.loader import load_data
+from src.load.loader import load_data, load_partition
 
 def get_latest_dir(base_path: str) -> Path:
     base = Path(base_path)
@@ -17,6 +17,8 @@ def get_latest_dir(base_path: str) -> Path:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("command")
+    parser.add_argument("--year", type=int)
+    parser.add_argument("--month", type=int)
     args, unknown = parser.parse_known_args()
 
     run_id = f"run_{uuid.uuid4().hex[:12]}"
@@ -32,6 +34,10 @@ def main():
         curated_dir = get_latest_dir("data/curated")
         loaded_run_id = curated_dir.name.split("=")[1]
         load_data(curated_dir, loaded_run_id)
+    elif args.command == "load-partition":
+        if not args.year or not args.month:
+            raise ValueError("--year and --month are required for load-partition")
+        load_partition(args.year, args.month, run_id)
     elif args.command == "run-all":
         raw_dir = extract_sources(run_id)
         curated_dir = transform_data(raw_dir, run_id)
