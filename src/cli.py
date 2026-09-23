@@ -1,29 +1,43 @@
 import argparse
-from src.config import PROJECT_ROOT, DB, SETTINGS
-from src.common.audit import new_run_id
+import uuid
+from pathlib import Path
+from src.extract.extractor import extract_sources
+from src.transform.transformer import transform_data
+from src.load.loader import load_data
 
+def get_latest_dir(base_path: str) -> Path:
+    base = Path(base_path)
+    if not base.exists():
+        raise FileNotFoundError(f"Directory {base_path} does not exist.")
+    dirs = sorted([d for d in base.iterdir() if d.is_dir() and "run_id=" in d.name])
+    if not dirs:
+        raise FileNotFoundError(f"No run_id directories found in {base_path}.")
+    return dirs[-1]
 
 def main():
-    parser = argparse.ArgumentParser(description='DSS150P modular pipeline')
-    sub = parser.add_subparsers(dest='command', required=True)
-    sub.add_parser('validate-env')
-    sub.add_parser('extract')
-    sub.add_parser('transform')
-    sub.add_parser('load')
-    sub.add_parser('validate')
-    b = sub.add_parser('benchmark'); b.add_argument('--repeats', type=int, default=5)
-    p = sub.add_parser('load-partition'); p.add_argument('--year', type=int, required=True); p.add_argument('--month', type=int, required=True)
-    sub.add_parser('run-all')
-    args = parser.parse_args()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("command")
+    args, unknown = parser.parse_known_args()
 
-    if args.command == 'validate-env':
-        print('PROJECT_ROOT=', PROJECT_ROOT)
-        print('DB host/database=', DB['host'], DB['dbname'])
-        print('Configured source=', SETTINGS['pipeline']['source_dir'])
-        return
+    run_id = f"run_{uuid.uuid4().hex[:12]}"
 
-    # TODO: Wire the modular functions together. Keep orchestration logic thin.
-    raise NotImplementedError(f'Wire command: {args.command}')
+    if args.command == "validate-env":
+        pass
+    elif args.command == "extract":
+        extract_sources(run_id)
+    elif args.command == "transform":
+        raw_dir = get_latest_dir("data/raw")
+        transform_data(raw_dir, run_id)
+    elif args.command == "load":
+        curated_dir = get_latest_dir("data/curated")
+        loaded_run_id = curated_dir.name.split("=")[1]
+        load_data(curated_dir, loaded_run_id)
+    elif args.command == "run-all":
+        raw_dir = extract_sources(run_id)
+        curated_dir = transform_data(raw_dir, run_id)
+        load_data(curated_dir, run_id)
+    else:
+        raise NotImplementedError(f"Unknown command: {args.command}")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
