@@ -1,3 +1,19 @@
+# Environment and Python
 .env
 .venv/
 __pycache__/
+
+# Airflow Logs
+logs/
+
+# Pipeline Output Data
+data/.last_run_id
+data/raw/
+data/curated/
+data/quarantine/
+data/partitioned/
+
+# Benchmark materializations (keep only the results csv)
+data/benchmark/*.jsonl
+data/benchmark/*.parquet
+data/benchmark/orders.csv
