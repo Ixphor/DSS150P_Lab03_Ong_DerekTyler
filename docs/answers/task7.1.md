@@ -1,0 +1,5 @@
+# Task 7.1
+
+### Explain why the virtual environment should not be committed to Git.
+
+The virtual environment (.venv) should not be committed to Git because it contains compiled binaries and executable files that are strictly tied to a specific operating system and hardware architecture. If a developer on a different OS, such as macOS or Linux, cloned the repository and attempted to use my Windows-based .venv, the pipeline would crash. Additionally, virtual environments contain thousands of heavy library files that would unnecessarily bloat the repository's size and slow down Git operations. Instead of tracking the environment itself, best practice is to track the requirements.txt file as a lightweight blueprint, allowing anyone to instantly rebuild an identical, OS-compatible environment on their own machine.
